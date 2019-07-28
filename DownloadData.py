@@ -19,6 +19,8 @@ def FetchSymbol(symbol):
     data['Symbol'] = symbol
     data['ChangeDay'] = data.Open - data.Close
     data['ChangeWeek'] = data.Open_lw - data.Close
+    data['ChangeDayBool'] = data.ChangeDay > 0
+    data = data[data.Open.notnull()]
     #print(data)
     return data
 def DownloadData(symbols):
