@@ -7,33 +7,37 @@ import tensorflow as tf
 import sklearn
 from sklearn.metrics import r2_score
 
-def NeuralNet(stockdata):
+def NeuralNet(stockdata_dict, max_num_of_days):
     print("STARTING NeuralNet")
+
+    #item = stockdata_dict[next(iter(stockdata_dict))]
+    symbols = list(stockdata_dict.keys())  # Python 3; use keys = d.keys() in Python 2
+    random.shuffle(symbols)
     #random.shuffle(stockdata)
+    features = np.zeros(shape=(len(stockdata_dict), 1, max_num_of_days))
+    #features = []
+    labels = []
+    i = 0
+    for symbol in symbols:
+    #for symbol, values in stockdata_dict.items():
+        print(symbol)
+        print(len(stockdata_dict[symbol][1]))
+        if len(stockdata_dict[symbol][1]) == max_num_of_days: #excluding stocks without full historical data
+            #features.append(np.array(values[1]))
+            features[i][0] = stockdata_dict[symbol][1]
+            #features.append(values[1])
+            labels.append(stockdata_dict[symbol][0])
+            i+=1
 
-    features_train = stockdata.Volume
-    features_train = np.array(features_train)
-    features_train = features_train.reshape(len(features_train), 1, 1)
-    features_train = features_train.astype(list)
-    for i in range(len(features_train)):
-        features_train[i] = [features_train[i]]
-    features_train = features_train.astype(float)
+    features = features[:i] #need to remove extra rows because we didn't add rows that were missing historical data.
+    features = features.astype(float)
+    labels = np.array(labels).astype(float)
 
-    features_test = stockdata.Volume
-    features_test = np.array(features_test)
-    features_test = features_test.reshape(len(features_test), 1, 1)
-    features_test = features_test.astype(list)
-    for i in range(len(features_test)):
-        features_test[i] = [features_test[i]]
-    features_test = features_test.astype(float)
+    features_train = features[:int(7*len(features)/10)]
+    labels_train = labels[:int(7*len(features)/10)]
 
-    labels_train = stockdata.ChangeDayBool
-    labels_train = np.array(labels_train)
-    labels_train = labels_train.astype(float)
-
-    labels_test = stockdata.ChangeDayBool
-    labels_test = np.array(labels_test)
-    labels_test = labels_test.astype(float)
+    features_test = features[int(7*len(features)/10):]
+    labels_test = labels[int(7*len(features)/10):]
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Flatten())
@@ -51,11 +55,11 @@ def NeuralNet(stockdata):
     new_model = tf.keras.models.load_model("stockanalysis.model")
     predictions = new_model.predict(features_test)
     new_model.summary()
-    print(predictions)
+    #print(predictions)
 
     y_pred = []
     for i in range(0, len(labels_test)):
-        # print("REAL: " + str(labels_test[i]) + " | PREDICTED: " + str(np.argmax(predictions[i])))
+        print("REAL: " + str(labels_test[i]) + " | PREDICTED: " + str(np.argmax(predictions[i])))
         y_pred.append(np.argmax(predictions[i]))
 
     y_true = np.array(labels_test)
