@@ -29,9 +29,12 @@ def FetchSymbol(symbol):
     data['PriceChangeDay'] = data['Adj Close'] - data['Adj Close_ld']
     #data['ChangeWeek'] = data.Open_lw - data.Close
     data['ChangeDayBool'] = data.PriceChangeDay > 0
+    #TODO: add another label to see whether stock went up or down over course of week
 
     PriceChangeDayList = list(data.PriceChangeDay)
     PriceChangeDayList = PriceChangeDayList[:-1] #excluding final day because that is the value we are trying to predict. it's not fair to have it included in the feature
+    #TODO: add feature which is a list of the total change in stock market prices each day
+    #TODO: add feature which is change in volume each day
     num_of_days = len(PriceChangeDayList)
     #HighLow =
     # for each symbol there will be an array with 2 indices.
