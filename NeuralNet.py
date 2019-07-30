@@ -5,7 +5,9 @@ import csv
 import random
 import tensorflow as tf
 import sklearn
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_squared_error
+from math import sqrt
+from sklearn.preprocessing import minmax_scale
 
 def NeuralNet(stockdata_dict, max_num_of_days):
     print("STARTING NeuralNet")
@@ -14,24 +16,28 @@ def NeuralNet(stockdata_dict, max_num_of_days):
     symbols = list(stockdata_dict.keys())  # Python 3; use keys = d.keys() in Python 2
     random.shuffle(symbols)
     #random.shuffle(stockdata)
-    features = np.zeros(shape=(len(stockdata_dict), 1, max_num_of_days))
+    features = np.zeros(shape=(len(stockdata_dict), 1, max_num_of_days*2))
     #features = []
     labels = []
     i = 0
     for symbol in symbols:
     #for symbol, values in stockdata_dict.items():
         print(symbol)
-        print(len(stockdata_dict[symbol][1]))
-        if len(stockdata_dict[symbol][1]) == max_num_of_days: #excluding stocks without full historical data
+        print(len(stockdata_dict[symbol][1][0]))
+        if len(stockdata_dict[symbol][1][0]) == max_num_of_days: #excluding stocks without full historical data
             #features.append(np.array(values[1]))
-            features[i][0] = stockdata_dict[symbol][1]
+            features[i][0] = stockdata_dict[symbol][1][0]+stockdata_dict[symbol][1][1]
             #features.append(values[1])
             labels.append(stockdata_dict[symbol][0])
             i+=1
 
     features = features[:i] #need to remove extra rows because we didn't add rows that were missing historical data.
     features = features.astype(float)
-    labels = np.array(labels).astype(float)
+    labels = np.array(labels)
+    labels = labels.astype(float)
+    # normalized_activity = normalized_activity / np.sqrt(np.sum(normalized_activity ** 2))
+    labels = minmax_scale(labels) * 10
+    labels = labels.astype(int)
 
     features_train = features[:int(7*len(features)/10)]
     labels_train = labels[:int(7*len(features)/10)]
@@ -45,7 +51,7 @@ def NeuralNet(stockdata_dict, max_num_of_days):
     model.add(tf.keras.layers.Dense(500, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
-    model.add(tf.keras.layers.Dense(2, activation=tf.nn.softmax))
+    model.add(tf.keras.layers.Dense(11, activation=tf.nn.softmax))
 
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
@@ -68,4 +74,6 @@ def NeuralNet(stockdata_dict, max_num_of_days):
     y_pred.astype(float)
     r_squared = r2_score(y_true, y_pred)
     print("R2 = " + str(r_squared))
+    rmse = sqrt(mean_squared_error(y_true, y_pred))
+    print("RMSE = " + str(rmse))
     print("DONE!!!!")
