@@ -9,15 +9,16 @@ from sklearn.metrics import r2_score, mean_squared_error
 from math import sqrt
 from sklearn.preprocessing import minmax_scale
 
-def NeuralNet(stockdata_dict, max_num_of_days):
+def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
     print("STARTING NeuralNet")
 
     #item = stockdata_dict[next(iter(stockdata_dict))]
     symbols = list(stockdata_dict.keys())  # Python 3; use keys = d.keys() in Python 2
     random.shuffle(symbols)
-    #random.shuffle(stockdata)
-    features = np.zeros(shape=(len(stockdata_dict), 1, max_num_of_days*2))
-    #features = []
+
+    #features = np.zeros(shape=(len(stockdata_dict), 1, max_num_of_days*2))
+    features = np.zeros(shape=(len(stockdata_dict), 1, num_of_days_to_use*2))
+
     labels = []
     i = 0
     for symbol in symbols:
@@ -25,9 +26,8 @@ def NeuralNet(stockdata_dict, max_num_of_days):
         print(symbol)
         print(len(stockdata_dict[symbol][1][0]))
         if len(stockdata_dict[symbol][1][0]) == max_num_of_days: #excluding stocks without full historical data
-            #features.append(np.array(values[1]))
-            features[i][0] = stockdata_dict[symbol][1][0]+stockdata_dict[symbol][1][1]
-            #features.append(values[1])
+            #features[i][0] = stockdata_dict[symbol][1][0]+stockdata_dict[symbol][1][1]
+            features[i][0] = stockdata_dict[symbol][1][0][:num_of_days_to_use] + stockdata_dict[symbol][1][1][:num_of_days_to_use]
             labels.append(stockdata_dict[symbol][0])
             i+=1
 
@@ -47,10 +47,10 @@ def NeuralNet(stockdata_dict, max_num_of_days):
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(1000, activation=tf.nn.relu))
+    model.add(tf.keras.layers.Dense(1000, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(500, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(500, activation=tf.nn.relu))
-    model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
-    model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
     model.add(tf.keras.layers.Dense(11, activation=tf.nn.softmax))
 
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])

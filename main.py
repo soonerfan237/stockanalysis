@@ -12,13 +12,13 @@ def main():
     fileObject.close()
     #symbols = ['DVN', 'MMM', 'YYY', 'AAPL','ADBE','AMZN']
     #symbols = ['JFKKR']
-    stockdata_dict, max_num_of_days = DownloadData.DownloadData(symbols[:20])
+    stockdata_dict, max_num_of_days = DownloadData.DownloadData(symbols)
     stockdata_dict = RemoveOutliers.RemoveOutliers(stockdata_dict)
     fileObject = open("stockdata_dict.pickle",'wb') # open the file for writing
     pickle.dump(stockdata_dict,fileObject)
     fileObject.close()
 
-    NeuralNet.NeuralNet(stockdata_dict, max_num_of_days)
+    NeuralNet.NeuralNet(stockdata_dict, max_num_of_days, 500)
 
     elapsed_time = (time.time() - start_time) / 60
     print("This took " + str(elapsed_time) + " minutes.")
