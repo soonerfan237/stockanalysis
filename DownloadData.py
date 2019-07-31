@@ -26,39 +26,9 @@ def FetchSymbolDay(symbol):
     data = data[data.Open.notnull()]
     data = data[data['Open_ld'].notnull()]
 
-    #JOINING PREVIOUS WEEKS DATA
-    data_lw = copy.deepcopy(data)
-    data_lw['DateID'] = data_lw.DateID + 7
-    data_lw = data_lw.set_index('DateID')
-    data = data.join(data_lw, on='DateID', rsuffix='_lw')
-    data = data[data.Open.notnull()]
-    data = data[data['Open_lw'].notnull()]
-
-    #JOINING PREVIOUS MONTHS DATA
-    data_lm = copy.deepcopy(data)
-    data_lm['DateID'] = data_lm.DateID + 30
-    data_lm = data_lm.set_index('DateID')
-    data = data.join(data_lm, on='DateID', rsuffix='_lm')
-    data = data[data.Open.notnull()]
-    data = data[data['Open_lm'].notnull()]
-
-    #JOINING PREVIOUS YEARS DATA
-    data_ly = copy.deepcopy(data)
-    data_ly['DateID'] = data_ly.DateID + 365
-    data_ly = data_ly.set_index('DateID')
-    data = data.join(data_ly, on='DateID', rsuffix='_ly')
-    data = data[data.Open.notnull()]
-    data = data[data['Open_ly'].notnull()]
-
     data['Symbol'] = symbol
     data['PriceChangeDay'] = data['Adj Close'] - data['Adj Close_ld']
     data['VolumeChangeDay'] = data['Volume'] - data['Volume_ld']
-    data['PriceChangeWeek'] = data['Adj Close'] - data['Adj Close_lw']
-    data['VolumeChangeWeek'] = data['Volume'] - data['Volume_lw']
-    data['PriceChangeMonth'] = data['Adj Close'] - data['Adj Close_lm']
-    data['VolumeChangeMonth'] = data['Volume'] - data['Volume_lm']
-    data['PriceChangeYear'] = data['Adj Close'] - data['Adj Close_ly']
-    data['VolumeChangeYear'] = data['Volume'] - data['Volume_ly']
 
     #TODO: add another label to see whether stock went up or down over course of week
 
@@ -66,15 +36,6 @@ def FetchSymbolDay(symbol):
     #PriceChangeDayList = PriceChangeDayList[:-1] #excluding final day because that is the value we are trying to predict. it's not fair to have it included in the feature
     VolumeChangeDayList = list(data.VolumeChangeDay)
     #VolumeChangeDayList = VolumeChangeDayList[:-1]
-
-    PriceChangeWeekList = list(data.PriceChangeWeek)
-    VolumeChangeWeekList = list(data.VolumeChangeWeek)
-
-    PriceChangeMonthList = list(data.PriceChangeMonth)
-    VolumeChangeMonthList = list(data.VolumeChangeMonth)
-
-    PriceChangeYearList = list(data.PriceChangeYear)
-    VolumeChangeYearList = list(data.VolumeChangeYear)
 
     #TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeDayList)-1
@@ -100,7 +61,7 @@ def FetchSymbolWeek(symbol):
 
     # JOINING PREVIOUS WEEKS DATA
     data_lw = copy.deepcopy(data)
-    data_lw['DateID'] = data_lw.DateID + 7
+    data_lw['DateID'] = data_lw.DateID + 5
     data_lw = data_lw.set_index('DateID')
     data = data.join(data_lw, on='DateID', rsuffix='_lw')
     data = data[data.Open.notnull()]
@@ -112,8 +73,8 @@ def FetchSymbolWeek(symbol):
 
     # TODO: add another label to see whether stock went up or down over course of week
 
-    PriceChangeWeekList = list(data.PriceChangeWeek)[::7]
-    VolumeChangeWeekList = list(data.VolumeChangeWeek)[::7]
+    PriceChangeWeekList = list(data.PriceChangeWeek)[::5]
+    VolumeChangeWeekList = list(data.VolumeChangeWeek)[::5]
 
     # TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeWeekList) - 1
@@ -138,7 +99,7 @@ def FetchSymbolMonth(symbol):
 
     # JOINING PREVIOUS MONTHS DATA
     data_lm = copy.deepcopy(data)
-    data_lm['DateID'] = data_lm.DateID + 30
+    data_lm['DateID'] = data_lm.DateID + 20
     data_lm = data_lm.set_index('DateID')
     data = data.join(data_lm, on='DateID', rsuffix='_lm')
     data = data[data.Open.notnull()]
@@ -150,8 +111,8 @@ def FetchSymbolMonth(symbol):
 
     # TODO: add another label to see whether stock went up or down over course of week
 
-    PriceChangeMonthList = list(data.PriceChangeMonth)[::30]
-    VolumeChangeMonthList = list(data.VolumeChangeMonth)[::30]
+    PriceChangeMonthList = list(data.PriceChangeMonth)[::20]
+    VolumeChangeMonthList = list(data.VolumeChangeMonth)[::20]
 
     # TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeMonthList) - 1
@@ -176,7 +137,7 @@ def FetchSymbolYear(symbol):
 
     # JOINING PREVIOUS YEARS DATA
     data_ly = copy.deepcopy(data)
-    data_ly['DateID'] = data_ly.DateID + 365
+    data_ly['DateID'] = data_ly.DateID + 250
     data_ly = data_ly.set_index('DateID')
     data = data.join(data_ly, on='DateID', rsuffix='_ly')
     data = data[data.Open.notnull()]
@@ -188,8 +149,8 @@ def FetchSymbolYear(symbol):
 
     # TODO: add another label to see whether stock went up or down over course of week
 
-    PriceChangeYearList = list(data.PriceChangeYear)[::365]
-    VolumeChangeYearList = list(data.VolumeChangeYear)[::365]
+    PriceChangeYearList = list(data.PriceChangeYear)[::250]
+    VolumeChangeYearList = list(data.VolumeChangeYear)[::250]
 
     # TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeYearList) - 1
@@ -239,11 +200,11 @@ def DownloadData(symbols, time_period):
     #stockdata = stockdata.sort_index()
     #print(stockdata)
 
-    fileObject = open("stockdata_RAW.pickle", 'wb')  # open the file for writing
+    fileObject = open("stockdata_RAW_FULL.pickle", 'wb')  # open the file for writing
     pickle.dump(stockdata, fileObject)
     fileObject.close()
 
-    fileObject = open("stockdata_dict_"+time_period+".pickle", 'wb')  # open the file for writing
+    fileObject = open("stockdata_dict_"+time_period+"_FULL_tuesday.pickle", 'wb')  # open the file for writing
     pickle.dump(stockdata_dict, fileObject)
     fileObject.close()
     print("DONE!!!!")

@@ -52,13 +52,7 @@ def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
 
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(1000))
-    model.add(LeakyReLU(0.2))
-    model.add(tf.keras.layers.Dense(500))#, activation=tf.nn.relu))
-    model.add(LeakyReLU(0.2))
-    model.add(tf.keras.layers.Dense(500))#, activation=tf.nn.relu))
-    model.add(LeakyReLU(0.2))
-    model.add(tf.keras.layers.Dense(500))#, activation=tf.nn.relu))
+    model.add(tf.keras.layers.Dense(1000, input_shape=(len(features_train[0]),)))
     model.add(LeakyReLU(0.2))
     model.add(tf.keras.layers.Dense(500))#, activation=tf.nn.relu))
     model.add(LeakyReLU(0.2))
@@ -92,3 +86,5 @@ def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
     rmse = sqrt(mean_squared_error(y_true, y_pred))
     print("RMSE = " + str(rmse))
     print("DONE!!!!")
+
+    return r_squared, rmse
