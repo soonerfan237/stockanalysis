@@ -3,6 +3,7 @@ import pandas as pd
 import copy
 import pickle
 import datetime
+import csv
 
 def FetchSymbolDay(symbol):
     print(symbol)
@@ -16,26 +17,32 @@ def FetchSymbolDay(symbol):
 
     #JOINING PREVIOUS DAYS DATA
     data_ld = copy.deepcopy(data)
-    #data_ld['DateLastDay'] = data_ld.index - pd.to_timedelta(1, unit='d')
     data_ld['DateID'] = data_ld.DateID + 1
     data_ld = data_ld.set_index('DateID')
-    #print(data_ld)
     data = data.join(data_ld, on='DateID', rsuffix='_ld')
-    #data['Date'] = data.index + pd.to_timedelta(1, unit='d')
-    #data = data.set_index('Date')
     data = data[data.Open.notnull()]
     data = data[data['Open_ld'].notnull()]
 
     data['Symbol'] = symbol
     data['PriceChangeDay'] = data['Adj Close'] - data['Adj Close_ld']
     data['VolumeChangeDay'] = data['Volume'] - data['Volume_ld']
-
+    #print(data)
     #TODO: add another label to see whether stock went up or down over course of week
 
     PriceChangeDayList = list(data.PriceChangeDay)
     #PriceChangeDayList = PriceChangeDayList[:-1] #excluding final day because that is the value we are trying to predict. it's not fair to have it included in the feature
     VolumeChangeDayList = list(data.VolumeChangeDay)
     #VolumeChangeDayList = VolumeChangeDayList[:-1]
+    with open("PriceChangeDayList.csv", mode='w') as PriceChangeDayList_csv:
+        PriceChangeDayList_csv_writer = csv.writer(PriceChangeDayList_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        PriceChangeDayList_csv_writer.writerow(["Day"])
+        for number in PriceChangeDayList:
+            PriceChangeDayList_csv_writer.writerow([number])
+    with open("VolumeChangeDayList.csv", mode='w') as VolumeChangeDayList_csv:
+        VolumeChangeDayList_csv_writer = csv.writer(VolumeChangeDayList_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        VolumeChangeDayList_csv_writer.writerow(["Day"])
+        for number in VolumeChangeDayList:
+            VolumeChangeDayList_csv_writer.writerow([number])
 
     #TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeDayList)-1
@@ -70,7 +77,7 @@ def FetchSymbolWeek(symbol):
     data['Symbol'] = symbol
     data['PriceChangeWeek'] = data['Adj Close'] - data['Adj Close_lw']
     data['VolumeChangeWeek'] = data['Volume'] - data['Volume_lw']
-
+    print(data)
     # TODO: add another label to see whether stock went up or down over course of week
 
     PriceChangeWeekList = list(data.PriceChangeWeek)[::5]
@@ -152,6 +159,17 @@ def FetchSymbolYear(symbol):
     PriceChangeYearList = list(data.PriceChangeYear)[::250]
     VolumeChangeYearList = list(data.VolumeChangeYear)[::250]
 
+    with open("PriceChangeYearList.csv", mode='w') as PriceChangeYearList_csv:
+        PriceChangeYearList_csv_writer = csv.writer(PriceChangeYearList_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        PriceChangeYearList_csv_writer.writerow(["Day"])
+        for number in PriceChangeYearList:
+            PriceChangeYearList_csv_writer.writerow([number])
+    with open("VolumeChangeYearList.csv", mode='w') as VolumeChangeYearList_csv:
+        VolumeChangeYearList_csv_writer = csv.writer(VolumeChangeYearList_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        VolumeChangeYearList_csv_writer.writerow(["Day"])
+        for number in VolumeChangeYearList:
+            VolumeChangeYearList_csv_writer.writerow([number])
+
     # TODO: add feature which is a list of the total change in stock market prices each day
     num_of_days = len(PriceChangeYearList) - 1
     # HighLow =
@@ -200,13 +218,20 @@ def DownloadData(symbols, time_period):
     #stockdata = stockdata.sort_index()
     #print(stockdata)
 
-    fileObject = open("stockdata_RAW_FULL.pickle", 'wb')  # open the file for writing
-    pickle.dump(stockdata, fileObject)
-    fileObject.close()
+    #fileObject = open("stockdata_RAW.pickle", 'wb')  # open the file for writing
+    #pickle.dump(stockdata, fileObject)
+    #fileObject.close()
 
-    fileObject = open("stockdata_dict_"+time_period+"_FULL_tuesday.pickle", 'wb')  # open the file for writing
-    pickle.dump(stockdata_dict, fileObject)
-    fileObject.close()
+    #fileObject = open("stockdata_dict_"+time_period+".pickle", 'wb')  # open the file for writing
+    #pickle.dump(stockdata_dict, fileObject)
+    #fileObject.close()
+
+    with open("stockdata_dict_"+time_period+".csv", mode='w') as stockdata_dict_csv:
+        stockdata_dict_csv_writer = csv.writer(stockdata_dict_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        stockdata_dict_csv_writer.writerow(["stock","PriceChange"])
+        for symbol, features in stockdata_dict.items():
+            stockdata_dict_csv_writer.writerow([symbol]+[features[0]])
+
     print("DONE!!!!")
 
     return stockdata_dict, max_num_of_days

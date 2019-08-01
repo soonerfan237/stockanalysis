@@ -17,6 +17,7 @@ def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
     print("STARTING NeuralNet")
     print("num_of_days_to_use = " + str(num_of_days_to_use))
     #item = stockdata_dict[next(iter(stockdata_dict))]
+    categories = 2
     symbols = list(stockdata_dict.keys())  # Python 3; use keys = d.keys() in Python 2
     random.shuffle(symbols)
 
@@ -40,8 +41,13 @@ def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
     labels = np.array(labels)
     labels = labels.astype(float)
     # normalized_activity = normalized_activity / np.sqrt(np.sum(normalized_activity ** 2))
-    labels = minmax_scale(labels) * 5
+    labels = minmax_scale(labels) * categories
     labels = labels.astype(int)
+    with open("labels.csv", mode='w') as labels_csv:
+        labels_csv_writer = csv.writer(labels_csv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        labels_csv_writer.writerow(["PriceChange"])
+        for number in labels:
+            labels_csv_writer.writerow([number])
 
     features_train = features[:int(7*len(features)/10)]
     labels_train = labels[:int(7*len(features)/10)]
@@ -60,7 +66,7 @@ def NeuralNet(stockdata_dict, max_num_of_days, num_of_days_to_use):
     model.add(LeakyReLU(0.2))
     model.add(tf.keras.layers.Dense(20))#, activation=tf.nn.relu))
     model.add(LeakyReLU(0.2))
-    model.add(tf.keras.layers.Dense(6, activation=tf.nn.softmax))
+    model.add(tf.keras.layers.Dense(categories+1, activation=tf.nn.softmax))
     #tf.keras.models.load_model('model', custom_objects={'leaky_relu': tf.nn.leaky_relu})
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
